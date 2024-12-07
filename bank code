@@ -1,0 +1,264 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class BankSystem {
+    private static SavingsAccount[] accounts = new SavingsAccount[100];
+    private static int accountCount = 0;
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        displayMainMenu();
+    }
+
+    private static void displayMainMenu() {
+        int choice;
+        do {
+            printBox("Bank Main Menu");
+            System.out.println("[1] New Account");
+            System.out.println("[2] Balance Inquiry");
+            System.out.println("[3] Deposit");
+            System.out.println("[4] Withdraw");
+            System.out.println("[5] Client Profile");
+            System.out.println("[6] Close Account");
+            System.out.println("[7] Exit");
+
+            choice = scanner.nextInt();
+            handleMenuChoice(choice);
+        } while (choice != 7);
+    }
+
+    private static void handleMenuChoice(int choice) {
+        switch (choice) {
+            case 1:
+                createNewAccount();
+                break;
+            case 2:
+                balanceInquiry();
+                break;
+            case 3:
+                deposit();
+                break;
+            case 4:
+                withdraw();
+                break;
+            case 5:
+                clientProfile();
+                break;
+            case 6:
+                closeAccount();
+                break;
+            case 7:
+                printBox("Exiting...");
+                break;
+            default:
+                printBox("Invalid choice. Please try again.");
+        }
+    }
+
+    private static void createNewAccount() {
+        System.out.print("Enter Name: ");
+        String name = scanner.next();
+        System.out.print("Enter Address: ");
+        String address = scanner.next();
+        System.out.print("Enter Birthday: ");
+        String birthday = scanner.next();
+        System.out.print("Enter Contact Number: ");
+        String contact = scanner.next();
+        
+        double initialDeposit = 0;
+        do {
+            System.out.print("Enter Initial Deposit (Min. 5000): ");
+            initialDeposit = scanner.nextDouble();
+        } while (initialDeposit < 5000);
+
+        accounts[accountCount++] = new SavingsAccount(name, address, birthday, contact, initialDeposit);
+        printBox("Account created! Account Number: " + accounts[accountCount - 1].getAccountNo());
+    }
+
+    private static void balanceInquiry() {
+        String accountNo = promptForAccountNumber();
+        SavingsAccount account = findAccount(accountNo);
+        if (account == null) return;
+
+        printBox("Client Name: " + account.getAccountName());
+        printBox("Current Balance: " + formatCurrency(account.balanceInquiry()));
+    }
+
+    private static void deposit() {
+        String accountNo = promptForAccountNumber();
+        SavingsAccount account = findAccount(accountNo);
+        if (account == null) return;
+
+        double amount;
+        do {
+            System.out.print("Enter deposit amount (Min. 100): ");
+            amount = scanner.nextDouble();
+        } while (amount < 100);
+        
+        account.deposit(amount);
+        printBox("Deposit successful! New Balance: " + formatCurrency(account.balanceInquiry()));
+    }
+
+    private static void withdraw() {
+        String accountNo = promptForAccountNumber();
+        SavingsAccount account = findAccount(accountNo);
+        if (account == null) return;
+
+        double amount;
+        do {
+            System.out.print("Enter amount to withdraw (Min. 100, Maintain 5000): ");
+            amount = scanner.nextDouble();
+        } while (amount < 100 || (account.balanceInquiry() - amount < 5000));
+
+        account.withdraw(amount);
+        printBox("Withdrawal successful! New Balance: " + formatCurrency(account.balanceInquiry()));
+    }
+
+    private static void clientProfile() {
+        String accountNo = promptForAccountNumber();
+        SavingsAccount account = findAccount(accountNo);
+        if (account == null) return;
+
+        printBox("Client Profile:");
+        System.out.println(account.getClientDetails());
+        printBox("Current Balance: " + formatCurrency(account.balanceInquiry()));
+    }
+
+    private static void closeAccount() {
+        String accountNo = promptForAccountNumber();
+        SavingsAccount account = findAccount(accountNo);
+        if (account == null) return;
+
+        System.out.print("Are you sure you want to close this account? (yes/no): ");
+        if (scanner.next().equalsIgnoreCase("yes")) {
+            account.closeAccount();
+            printBox("Account closed successfully.");
+            accounts[findAccountIndex(accountNo)] = null;
+        } else {
+            printBox("Account closure cancelled.");
+        }
+    }
+
+    private static String promptForAccountNumber() {
+        System.out.print("Enter Account Number: ");
+        return scanner.next();
+    }
+
+    private static SavingsAccount findAccount(String accountNo) {
+        for (int i = 0; i < accountCount; i++) {
+            if (accounts[i].validateAcctNumber(accountNo)) {
+                return accounts[i];
+            }
+        }
+        printBox("Invalid account number.");
+        return null;
+    }
+
+    private static int findAccountIndex(String accountNo) {
+        for (int i = 0; i < accountCount; i++) {
+            if (accounts[i].validateAcctNumber(accountNo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static void printBox(String message) {
+        int length = message.length() + 4;
+        String border = createRepeatedString("+", length); // Generate border based on message length
+
+        System.out.println(border);
+        System.out.println("| " + message + " |");
+        System.out.println(border);
+    }
+
+    private static String createRepeatedString(String str, int times) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < times; i++) {
+            sb.append(str);
+        }
+        return sb.toString();
+    }
+
+    
+    private static String formatCurrency(double amount) {
+        return "₱" + String.format("%.2f", amount);
+    }
+}
+
+class SavingsAccount extends BankAccount {
+    private String accountNo;
+    private double balance;
+    private static double interestRate = 0.05;
+    private static Random rand = new Random();
+
+    public SavingsAccount(String accountName, String address, String birthday, String contactNumber, double initialDeposit) {
+        super(accountName, address, birthday, contactNumber);
+        this.accountNo = generateAccountNo();
+        this.balance = initialDeposit;
+    }
+
+    private String generateAccountNo() {
+        return String.format("%04d", rand.nextInt(10000));
+    }
+
+    public String getAccountNo() {
+        return accountNo;
+    }
+
+    public double balanceInquiry() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+        double interest = balance * interestRate;
+        balance += interest;
+    }
+
+    public void withdraw(double amount) {
+        balance -= amount;
+    }
+
+    public boolean validateAcctNumber(String accountNo) {
+        return this.accountNo.equals(accountNo);
+    }
+
+    public void closeAccount() {
+        balance = 0;
+    }
+}
+
+class BankAccount {
+    private String accountName;
+    private String address;
+    private String birthday;
+    private String contactNumber;
+
+    public BankAccount(String accountName, String address, String birthday, String contactNumber) {
+        this.accountName = accountName;
+        this.address = address;
+        this.birthday = birthday;
+        this.contactNumber = contactNumber;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getBirthday() {
+        return birthday;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public String getClientDetails() {
+        return "Name: " + accountName + ", Address: " + address + ", Birthday: " + birthday + ", Contact: " + contactNumber;
+    }
+}
