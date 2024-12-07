@@ -1,3 +1,6 @@
+PROJECT NAME: BANK MANAGEMENT SYSTEM
+
+
 I. A brief project overview : 
       Our  project is built in java programming language with text base approach  and the name of our text base project is banking system  that  the user can create new account , check their  balance, deposit amount, withdrawing amount, and view the client profile. 
 
