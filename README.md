@@ -28,7 +28,7 @@ Iv. Instructions for running the program:
 
 -Fourth withdraw just input 4 to withdraw the amount you want make sure you withdraw the amount not exceed on the balance on your account. 
 
--Fifth client profile just input 5 to see the profile and make sure you  can input the right account number for  your account to access it  so r you can see the remaining balance of your  account 
+-Fifth client profile just input 5 to see the profile and make sure you  can input the right account number for  your account to access it so are you can see the remaining balance of your  account 
 
 -And  last is close account and exit. 
 
